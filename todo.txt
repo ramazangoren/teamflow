@@ -1,0 +1,3 @@
+create stores for frontend, there is to much copy paste
+change the design of the pages
+redeign the footer
