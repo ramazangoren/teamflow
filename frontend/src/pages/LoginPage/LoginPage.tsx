@@ -1,146 +1,135 @@
-import { Alert, Anchor, Box, Button, Center, Container, Group, Paper, PasswordInput, Stack, Text, TextInput, ThemeIcon, Title } from "@mantine/core";
-import { IconAlertCircle, IconAt, IconUserPlus } from "@tabler/icons-react";
+import { useState } from 'react';
+import {
+  TextInput,
+  PasswordInput,
+  Paper,
+  Title,
+  Text,
+  Container,
+  Button,
+  Anchor,
+  Stack,
+  Alert,
+  Checkbox,
+  Group,
+  Divider,
+} from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { useState } from "react";
-import authService from "../../sevices/authServices";
-import theme from "../../theme/theme";
+import { IconMail, IconAlertCircle, IconBrandGoogle, IconBrandGithub } from '@tabler/icons-react';
+import { authService, type LoginData } from '../../sevices/authServices';
+import { useNavigate } from 'react-router';
 
-const LoginPage = () => {
-    const [isLoading, setIsLoading] = useState(false);
-    const [apiError, setApiError] = useState('');
+export default function LoginPage() {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
+  const form = useForm({
+    initialValues: {
+      email: '',
+      password: '',
+      rememberMe: false,
+    },
+    validate: {
+      email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
+      password: (value) => (value.length > 0 ? null : 'Password is required'),
+    },
+  });
 
-    const form = useForm({
-        initialValues: {
-            FullName: '',
-            email: '',
-            password: '',
-            confirmPassword: '',
-        },
-        validate: {
-            email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
-            password: (value) => (value.length > 0 ? null : 'Password is required'),
-        },
-    });
+  const handleSubmit = async (values: typeof form.values) => {
+    setLoading(true);
+    setError(null);
 
+    try {
+      const loginData: LoginData = {
+        email: values.email,
+        password: values.password,
+      };
 
-    const handleSubmit = async (values: any) => {
-        setIsLoading(true);
-        setApiError('');
+      await authService.login(loginData);
+      navigate('/');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        try {
-            await authService.login({
-                email: values.email,
-                password: values.password,
-            });
+  return (
+    <Container size={460} my={80}>
+      <Title ta="center" fw={900} style={{ fontSize: '2rem' }}>
+        Welcome back
+      </Title>
+      <Text c="dimmed" size="sm" ta="center" mt={5}>
+        Don't have an account yet?{' '}
+        <Anchor size="sm" onClick={() => navigate('/register')}>
+          Create account
+        </Anchor>
+      </Text>
 
-            setTimeout(() => {
-                window.location.href = '/';
-            }, 2000);
+      <Paper withBorder shadow="md" p={40} mt={30} radius="md">
+        <Stack gap="md">
+          <Group grow>
+            <Button
+              variant="default"
+              leftSection={<IconBrandGoogle size={18} />}
+              radius="md"
+            >
+              Google
+            </Button>
+            <Button
+              variant="default"
+              leftSection={<IconBrandGithub size={18} />}
+              radius="md"
+            >
+              GitHub
+            </Button>
+          </Group>
 
-        } catch (error: any) {
-            setApiError(error.message);
-            console.log(error.message);
+          <Divider label="Or continue with email" labelPosition="center" />
 
-        } finally {
-            setIsLoading(false);
-        }
-    };
+          {error && (
+            <Alert icon={<IconAlertCircle size={16} />} color="red" radius="md">
+              {error}
+            </Alert>
+          )}
 
-    return (
-        <Box
-            style={{
-                ...theme.layout.fullScreen,
-                background: theme.colors.primary.gradient,
-            }}
-        >
-            <Container size={theme.layout.container.medium} style={{ width: '100%' }}>
-                <Paper
-                    radius={theme.components.paper.radius}
-                    p={theme.components.paper.padding}
-                    withBorder={theme.components.paper.withBorder}
-                    style={{
-                        boxShadow: theme.components.paper.shadow,
-                    }}
-                >
-                    <Center mb="lg">
-                        <ThemeIcon
-                            size={theme.components.themeIcon.size}
-                            radius={theme.components.themeIcon.radius}
-                            variant={theme.components.themeIcon.variant}
-                            gradient={theme.components.themeIcon.gradient}
-                        >
-                            <IconUserPlus size={32} />
-                        </ThemeIcon>
-                    </Center>
+          <form onSubmit={form.onSubmit(handleSubmit)}>
+            <Stack gap="md">
+              <TextInput
+                required
+                label="Email"
+                placeholder="you@example.com"
+                leftSection={<IconMail size={18} />}
+                radius="md"
+                {...form.getInputProps('email')}
+              />
 
-                    <Title order={1} ta="center" mb="xs">
-                        Login
-                    </Title>
+              <PasswordInput
+                required
+                label="Password"
+                placeholder="Your password"
+                radius="md"
+                {...form.getInputProps('password')}
+              />
 
-                    <Text c={theme.colors.text.dimmed} size="sm" ta="center" mb="xl">
-                        Sign in to your account
-                    </Text>
+              <Group justify="space-between">
+                <Checkbox
+                  label="Remember me"
+                  {...form.getInputProps('rememberMe', { type: 'checkbox' })}
+                />
+                <Anchor size="sm" onClick={() => navigate('/forgot-password')}>
+                  Forgot password?
+                </Anchor>
+              </Group>
 
-                    <Stack>
-
-                        <TextInput
-                            label="Email Address"
-                            placeholder="you@example.com"
-                            size={theme.components.input.size}
-                            {...form.getInputProps('email')}
-                        />
-
-                        <PasswordInput
-                            label="Password"
-                            placeholder="Your password"
-                            size={theme.components.input.size}
-                            {...form.getInputProps('password')}
-                        />
-
-                        {apiError && (
-                            <Alert
-                                icon={<IconAlertCircle size={16} />}
-                                title="Error"
-                                color={theme.colors.error}
-                                variant="light"
-                            >
-                                {apiError}
-                            </Alert>
-                        )}
-
-                        <Button
-                            fullWidth={theme.components.button.fullWidth}
-                            size={theme.components.button.size}
-                            mt="md"
-                            loading={isLoading}
-                            onClick={() => {
-                                const validation = form.validate();
-                                if (!validation.hasErrors) {
-                                    handleSubmit(form.values);
-                                }
-                            }}
-                            style={{
-                                color: theme.components.button.color
-                            }}
-                            variant={theme.components.button.variant}
-                        >
-                            login
-                        </Button>
-                    </Stack>
-
-                    <Group mt="xl">
-                        <Text size="sm" c={theme.colors.text.dimmed}>
-                            dont have an account?{' '}
-                            <Anchor size="sm" component="a" href="/register">
-                                Sign up
-                            </Anchor>
-                        </Text>
-                    </Group>
-                </Paper>
-            </Container>
-        </Box>
-    );
-};
-
-export default LoginPage;
+              <Button type="submit" fullWidth radius="md" size="md" loading={loading}>
+                Sign in
+              </Button>
+            </Stack>
+          </form>
+        </Stack>
+      </Paper>
+    </Container>
+  );
+}

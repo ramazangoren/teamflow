@@ -1,4 +1,3 @@
-import React from 'react';
 import {
   Container,
   Group,
@@ -8,37 +7,35 @@ import {
   Divider,
   Box,
   ActionIcon,
-} from '@mantine/core';
+} from "@mantine/core";
 import {
   IconBrandTwitter,
-  IconBrandInstagram,
-  IconBrandFacebook,
   IconBrandLinkedin,
+  IconBrandGithub,
   IconMail,
   IconHeart,
-} from '@tabler/icons-react';
+} from "@tabler/icons-react";
 
 const Footer = () => {
   const currentYear = new Date().getFullYear();
 
   const footerLinks = {
     product: [
-      { label: 'Features', href: '/features' },
-      { label: 'Pricing', href: '/pricing' },
-      { label: 'Wardrobe', href: '/closet' },
-      { label: 'Outfit Suggestions', href: '/outfit-suggestions' },
+      { label: "Features", href: "/features" },
+      { label: "Task Management", href: "/tasks" },
+      { label: "Team Collaboration", href: "/teams" },
+      { label: "Roadmap", href: "/roadmap" },
     ],
     company: [
-      { label: 'About Us', href: '/about' },
-      { label: 'Blog', href: '/blog' },
-      { label: 'Careers', href: '/careers' },
-      { label: 'Contact', href: '/contact' },
+      { label: "About", href: "/about" },
+      { label: "Blog", href: "/blog" },
+      { label: "Careers", href: "/careers" },
+      { label: "Contact", href: "/contact" },
     ],
-    support: [
-      { label: 'Help Center', href: '/help' },
-      { label: 'FAQs', href: '/faq' },
-      { label: 'Privacy Policy', href: '/privacy' },
-      { label: 'Terms of Service', href: '/terms' },
+    legal: [
+      { label: "Privacy Policy", href: "/privacy" },
+      { label: "Terms of Service", href: "/terms" },
+      { label: "Security", href: "/security" },
     ],
   };
 
@@ -46,31 +43,23 @@ const Footer = () => {
     <Box
       component="footer"
       style={{
-        backgroundColor: '#1a1b1e',
-        borderTop: '1px solid #2c2e33',
-        marginTop: 'auto',
+        backgroundColor: "#0f172a",
+        borderTop: "1px solid #1e293b",
+        marginTop: "auto",
       }}
     >
-      <Container size="xl" py="xl">
+      <Container size="xl" py="xl" style={{ maxWidth: 1200 }}>
         <Stack gap="xl">
-          {/* Main Footer Content */}
+          {/* Main footer content */}
           <Group align="flex-start" justify="space-between" wrap="wrap">
-            {/* Brand Section */}
-            <Stack gap="md" style={{ maxWidth: 300 }}>
-              <Text
-                size="xl"
-                fw={700}
-                style={{
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                }}
-              >
-                StyleSync
+            {/* Brand */}
+            <Stack gap="md" style={{ maxWidth: 320 }}>
+              <Text size="xl" fw={700} c="white">
+                TeamFlow
               </Text>
               <Text size="sm" c="dimmed">
-                Your personal wardrobe assistant. Organize your closet, discover outfit
-                combinations, and always look your best.
+                A collaborative workspace to plan, track, and deliver work
+                together. Keep teams aligned and moving forward.
               </Text>
               <Group gap="xs">
                 <ActionIcon
@@ -88,35 +77,25 @@ const Footer = () => {
                   variant="subtle"
                   color="gray"
                   component="a"
-                  href="https://instagram.com"
-                  target="_blank"
-                >
-                  <IconBrandInstagram size={20} />
-                </ActionIcon>
-                <ActionIcon
-                  size="lg"
-                  variant="subtle"
-                  color="gray"
-                  component="a"
-                  href="https://facebook.com"
-                  target="_blank"
-                >
-                  <IconBrandFacebook size={20} />
-                </ActionIcon>
-                <ActionIcon
-                  size="lg"
-                  variant="subtle"
-                  color="gray"
-                  component="a"
                   href="https://linkedin.com"
                   target="_blank"
                 >
                   <IconBrandLinkedin size={20} />
                 </ActionIcon>
+                <ActionIcon
+                  size="lg"
+                  variant="subtle"
+                  color="gray"
+                  component="a"
+                  href="https://github.com"
+                  target="_blank"
+                >
+                  <IconBrandGithub size={20} />
+                </ActionIcon>
               </Group>
             </Stack>
 
-            {/* Product Links */}
+            {/* Product */}
             <Stack gap="sm">
               <Text size="sm" fw={600} c="white">
                 Product
@@ -127,7 +106,7 @@ const Footer = () => {
                   href={link.href}
                   size="sm"
                   c="dimmed"
-                  style={{ textDecoration: 'none' }}
+                  style={{ textDecoration: "none" }}
                   className="footer-link"
                 >
                   {link.label}
@@ -135,7 +114,7 @@ const Footer = () => {
               ))}
             </Stack>
 
-            {/* Company Links */}
+            {/* Company */}
             <Stack gap="sm">
               <Text size="sm" fw={600} c="white">
                 Company
@@ -146,7 +125,7 @@ const Footer = () => {
                   href={link.href}
                   size="sm"
                   c="dimmed"
-                  style={{ textDecoration: 'none' }}
+                  style={{ textDecoration: "none" }}
                   className="footer-link"
                 >
                   {link.label}
@@ -154,18 +133,18 @@ const Footer = () => {
               ))}
             </Stack>
 
-            {/* Support Links */}
+            {/* Legal */}
             <Stack gap="sm">
               <Text size="sm" fw={600} c="white">
-                Support
+                Legal
               </Text>
-              {footerLinks.support.map((link) => (
+              {footerLinks.legal.map((link) => (
                 <Anchor
                   key={link.label}
                   href={link.href}
                   size="sm"
                   c="dimmed"
-                  style={{ textDecoration: 'none' }}
+                  style={{ textDecoration: "none" }}
                   className="footer-link"
                 >
                   {link.label}
@@ -173,45 +152,45 @@ const Footer = () => {
               ))}
             </Stack>
 
-            {/* Newsletter */}
-            <Stack gap="sm" style={{ maxWidth: 250 }}>
+            {/* Contact */}
+            <Stack gap="sm" style={{ maxWidth: 260 }}>
               <Text size="sm" fw={600} c="white">
-                Stay Updated
+                Contact
               </Text>
               <Text size="xs" c="dimmed">
-                Get style tips and updates delivered to your inbox.
+                Questions, feedback, or enterprise inquiries.
               </Text>
               <Group gap="xs">
                 <ActionIcon
                   size="lg"
-                  variant="gradient"
-                  gradient={{ from: '#667eea', to: '#764ba2', deg: 135 }}
+                  variant="light"
+                  color="blue"
                   component="a"
-                  href="mailto:hello@stylesync.com"
+                  href="mailto:hello@teamflow.app"
                 >
                   <IconMail size={20} />
                 </ActionIcon>
                 <Text size="xs" c="dimmed">
-                  hello@stylesync.com
+                  hello@teamflow.app
                 </Text>
               </Group>
             </Stack>
           </Group>
 
-          <Divider color="#2c2e33" />
+          <Divider color="#1e293b" />
 
-          {/* Bottom Bar */}
+          {/* Bottom bar */}
           <Group justify="space-between" align="center" wrap="wrap">
             <Text size="xs" c="dimmed">
-              © {currentYear} StyleSync. All rights reserved.
+              © {currentYear} TeamFlow. All rights reserved.
             </Text>
-            <Group gap="xs" align="center">
+            <Group gap={4} align="center">
               <Text size="xs" c="dimmed">
-                Made with
+                Built with
               </Text>
-              <IconHeart size={14} style={{ color: '#e03131' }} fill="#e03131" />
+              <IconHeart size={14} color="#ef4444" />
               <Text size="xs" c="dimmed">
-                for fashion enthusiasts
+                for productive teams
               </Text>
             </Group>
           </Group>
@@ -224,7 +203,7 @@ const Footer = () => {
             transition: color 0.2s ease;
           }
           .footer-link:hover {
-            color: #667eea !important;
+            color: #60a5fa !important;
           }
         `}
       </style>

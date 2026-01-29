@@ -5,12 +5,14 @@ import LoginPage from "./pages/LoginPage/LoginPage";
 import Layout from "./components/Layout";
 import NotFound from "./pages/router/NotFound";
 import RegisterPage from "./pages/RegisterPage/RegisterPage";
-import DashboardPage from "./pages/DashboardPage/DashboardPage";
-import ClosetPage from "./pages/ClosetPage/ClosetPage";
-import OutfitSuggestionsPage from "./pages/OutfitSuggestionsPage/OutfitSuggestionsPage";
-import Profile from "./pages/Profile/Profile";
-import Favorites from "./pages/Favorites/Favorites";
-import MyOutfits from "./pages/MyOutfits/MyOutfits";
+import ResetPasswordPage from "./pages/Resetpasswordpage/Resetpasswordpage";
+import ForgotPasswordPage from "./pages/Forgotpasswordpage/Forgotpasswordpage";
+import Dashboard from "./pages/Dashboard/Dashboard";
+import Tasks from "./pages/Tasks/Tasks";
+import Teams from "./pages/Teams/Teams";
+import Calendar from "./pages/Calendar/Calendar";
+import Notifications from "./pages/Notifications/Notifications";
+
 
 const router = createBrowserRouter([
   {
@@ -22,28 +24,28 @@ const router = createBrowserRouter([
         Component: HomePage,
       },
       {
-        path: "dashboard",
-        Component: DashboardPage, // still working on it's resposiveness
+        path: "/dashboard",
+        Component: Dashboard,
       },
       {
-        path: "closet",
-        Component: ClosetPage, // still working on it's resposiveness
+        path: "/tasks",
+        Component: Tasks,
       },
       {
-        path: "outfits",
-        Component: OutfitSuggestionsPage, // still working on it's resposiveness
+        path: "/teams",
+        Component: Teams,
       },
       {
-        path: "profile",
-        Component: Profile, // still working on it's resposiveness
+        path: "/calendar",
+        Component: Calendar,
       },
+      // {
+      //   path: "/tasks/new",
+      //   Component: NewTask,
+      // },
       {
-        path: "favorites",
-        Component: Favorites, // still working on it's resposiveness
-      },
-      {
-        path: "myoutfits",
-        Component: MyOutfits, // still working on it's resposiveness
+        path: "/notifications",
+        Component: Notifications,
       },
     ],
   },
@@ -58,6 +60,14 @@ const router = createBrowserRouter([
   {
     path: "*",
     Component: NotFound,
+  },
+  {
+    path: "/forgot-password",
+    Component: ForgotPasswordPage,
+  },
+  {
+    path: "reset-password",
+    Component: ResetPasswordPage,
   },
 ]);
 

@@ -1,46 +1,90 @@
 import axios from 'axios';
-import { clearUserData, getAuthHeaders, handleError, saveUserData } from '../utilities/authUtilities';
-import type { AuthResponse, LoginRequest, RegisterRequest} from '../interfaces/interfaces';
 
 const API_BASE_URL = 'http://localhost:5003/api';
 
+// Create axios instance with default config
+const apiClient = axios.create({
+  baseURL: API_BASE_URL,
+  headers: {
+    'Content-Type': 'application/json',
+    'accept': '*/*',
+  },
+});
 
-export const register = async (data: RegisterRequest): Promise<AuthResponse> => {
-  try {
-    const response = await axios.post<AuthResponse>(
-      `${API_BASE_URL}/Auth/register`,
-      data,
-      { headers: getAuthHeaders() }
-    );
-    saveUserData(response.data);
-    return response.data;
-  } catch (error) {
-    throw handleError(error);
+// Add token to requests if available
+apiClient.interceptors.request.use((config) => {
+  const token = localStorage.getItem('authToken');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
   }
-};
+  return config;
+});
 
-export const login = async (data: LoginRequest): Promise<AuthResponse> => {
-  try {
-    const response = await axios.post<AuthResponse>(
-      `${API_BASE_URL}/Auth/login`,
-      data,
-      { headers: getAuthHeaders() }
-    );
-    saveUserData(response.data);
+// Types
+export interface RegisterData {
+  email: string;
+  password: string;
+  fullName: string;
+}
+
+export interface LoginData {
+  email: string;
+  password: string;
+}
+
+export interface AuthResponse {
+  token?: string;
+  user?: {
+    id: string;
+    email: string;
+    fullName: string;
+  };
+  message?: string;
+}
+
+// Auth Service
+export const authService = {
+  // Register new user
+  register: async (data: RegisterData): Promise<AuthResponse> => {
+    const response = await apiClient.post<AuthResponse>('/auth/register', data);
+    if (response.data.token) {
+      localStorage.setItem('authToken', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+    }
     return response.data;
-  } catch (error) {
-    throw handleError(error);
-  }
-};
+  },
 
-export const logout = (): void => {
-  clearUserData();
-};
+  // Login user
+  login: async (data: LoginData): Promise<AuthResponse> => {
+    const response = await apiClient.post<AuthResponse>('/auth/login', data);
+    if (response.data.token) {
+      localStorage.setItem('authToken', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+    }
+    return response.data;
+  },
 
-const authService = {
-  register,
-  login,
-  logout,
+  // Logout user
+  logout: () => {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('user');
+  },
+
+  // Get current user
+  getCurrentUser: () => {
+    const userStr = localStorage.getItem('user');
+    return userStr ? JSON.parse(userStr) : null;
+  },
+
+  // Check if user is authenticated
+  isAuthenticated: (): boolean => {
+    return !!localStorage.getItem('authToken');
+  },
+
+  // Get auth token
+  getToken: (): string | null => {
+    return localStorage.getItem('authToken');
+  },
 };
 
 export default authService;

@@ -8,6 +8,10 @@ using Dapper;
 using MySqlConnector;
 using System.Data;
 using Microsoft.AspNetCore.Authorization;
+using Backend.DTOs.Users;
+using Backend.Services.Interfaces;
+
+
 
 [ApiController]
 [Route("api/[controller]")]

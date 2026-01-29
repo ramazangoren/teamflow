@@ -2,232 +2,156 @@ import { useState } from 'react';
 import {
   TextInput,
   PasswordInput,
-  Button,
   Paper,
   Title,
   Text,
   Container,
-  Group,
+  Button,
   Anchor,
   Stack,
   Alert,
-  Center,
-  Box,
-  ThemeIcon,
+  Group,
+  Divider,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { IconUserPlus, IconCheck, IconAlertCircle } from '@tabler/icons-react';
-import authService from '../../sevices/authServices';
-import theme from '../../theme/theme';
+import { IconMail, IconUser, IconAlertCircle, IconBrandGoogle, IconBrandGithub } from '@tabler/icons-react';
+import { authService, type RegisterData } from '../../sevices/authServices';
+import { useNavigate } from 'react-router';
 
-const RegisterPage = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [registrationSuccess, setRegistrationSuccess] = useState(false);
-  const [apiError, setApiError] = useState('');
+export default function RegisterPage() {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   const form = useForm({
     initialValues: {
-      FullName: '',
       email: '',
       password: '',
       confirmPassword: '',
+      fullName: '',
     },
     validate: {
-      FullName: (value) => {
-        if (!value) return 'Display name is required';
-        if (value.length < 2) return 'Display name must be at least 2 characters';
-        return null;
-      },
-      email: (value) => {
-        if (!value) return 'Email is required';
-        if (!/^\S+@\S+\.\S+$/.test(value)) return 'Invalid email format';
-        return null;
-      },
-      password: (value) => {
-        if (!value) return 'Password is required';
-        if (value.length < 6) return 'Password must be at least 6 characters';
-        return null;
-      },
-      confirmPassword: (value, values) => {
-        if (!value) return 'Please confirm your password';
-        if (value !== values.password) return 'Passwords do not match';
-        return null;
-      },
+      email: (value) => (/^\S+@\S+$/.test(value) ? null : 'Invalid email'),
+      fullName: (value) => (value.length >= 2 ? null : 'Name must be at least 2 characters'),
+      password: (value) => (value.length >= 6 ? null : 'Password must be at least 6 characters'),
+      confirmPassword: (value, values) =>
+        value === values.password ? null : 'Passwords do not match',
     },
   });
 
-  const handleSubmit = async (values: any) => {
-    setIsLoading(true);
-    setApiError('');
+  const handleSubmit = async (values: typeof form.values) => {
+    setLoading(true);
+    setError(null);
 
     try {
-      await authService.register({
+      const registerData: RegisterData = {
         email: values.email,
         password: values.password,
-        FullName: values.FullName,
-      });
+        fullName: values.fullName,
+      };
 
-      setRegistrationSuccess(true);
-
-      setTimeout(() => {
-        window.location.href = '/login';
-      }, 2000);
-
-    } catch (error: any) {
-      setApiError(error.message);
-      console.log(error.message);
-      
+      await authService.register(registerData);
+      navigate('/login');
+    } catch (err: any) {
+      setError(err.response?.data?.message || 'Registration failed. Please try again.');
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
-  if (registrationSuccess) {
-    return (
-      <Box
-        style={{
-          ...theme.layout.fullScreen,
-          background: theme.colors.primary.gradient,
-        }}
-      >
-        <Container size={theme.layout.container.small} style={{ width: '100%' }}>
-          <Paper
-            radius={theme.components.paper.radius}
-            p={theme.components.paper.padding}
-            withBorder={theme.components.paper.withBorder}
-            style={{
-              boxShadow: theme.components.paper.shadow,
-            }}
-          >
-            <Center mb="md">
-              <ThemeIcon
-                size={60}
-                radius="xl"
-                variant="light"
-                color={theme.colors.success}
-              >
-                <IconCheck size={32} />
-              </ThemeIcon>
-            </Center>
-            <Title order={2} ta="center" mb="xs">
-              Registration Successful!
-            </Title>
-            <Text c={theme.colors.text.dimmed} size="sm" ta="center">
-              Redirecting you to dashboard...
-            </Text>
-          </Paper>
-        </Container>
-      </Box>
-    );
-  }
-
   return (
-    <Box
-      style={{
-        ...theme.layout.fullScreen,
-        background: theme.colors.primary.gradient,
-      }}
-    >
-      <Container size={theme.layout.container.medium} style={{ width: '100%' }}>
-        <Paper
-          radius={theme.components.paper.radius}
-          p={theme.components.paper.padding}
-          withBorder={theme.components.paper.withBorder}
-          style={{
-            boxShadow: theme.components.paper.shadow,
-          }}
-        >
-          <Center mb="lg">
-            <ThemeIcon
-              size={theme.components.themeIcon.size}
-              radius={theme.components.themeIcon.radius}
-              variant={theme.components.themeIcon.variant}
-              gradient={theme.components.themeIcon.gradient}
-            >
-              <IconUserPlus size={32} />
-            </ThemeIcon>
-          </Center>
+    <Container size={460} my={80}>
+      <Title ta="center" fw={900} style={{ fontSize: '2rem' }}>
+        Create your account
+      </Title>
+      <Text c="dimmed" size="sm" ta="center" mt={5}>
+        Already have an account?{' '}
+        <Anchor size="sm" onClick={() => navigate('/login')}>
+          Sign in
+        </Anchor>
+      </Text>
 
-          <Title order={1} ta="center" mb="xs">
-            Create Account
-          </Title>
-
-          <Text c={theme.colors.text.dimmed} size="sm" ta="center" mb="xl">
-            Join us today and get started
-          </Text>
-
-          <Stack>
-            <TextInput
-              label="Display Name"
-              placeholder="John Doe"
-              size={theme.components.input.size}
-              {...form.getInputProps('FullName')}
-            />
-
-            <TextInput
-              label="Email Address"
-              placeholder="you@example.com"
-              size={theme.components.input.size}
-              {...form.getInputProps('email')}
-            />
-
-            <PasswordInput
-              label="Password"
-              placeholder="Your password"
-              size={theme.components.input.size}
-              {...form.getInputProps('password')}
-            />
-
-            <PasswordInput
-              label="Confirm Password"
-              placeholder="Confirm your password"
-              size={theme.components.input.size}
-              {...form.getInputProps('confirmPassword')}
-            />
-
-            {apiError && (
-              <Alert
-                icon={<IconAlertCircle size={16} />}
-                title="Error"
-                color={theme.colors.error}
-                variant="light"
-              >
-                {apiError}
-              </Alert>
-            )}
-
+      <Paper withBorder shadow="md" p={40} mt={30} radius="md">
+        <Stack gap="md">
+          <Group grow>
             <Button
-              fullWidth={theme.components.button.fullWidth}
-              size={theme.components.button.size}
-              mt="md"
-              loading={isLoading}
-              onClick={() => {
-                const validation = form.validate();
-                if (!validation.hasErrors) {
-                  handleSubmit(form.values);
-                }
-              }}
-            style={{
-                color: theme.components.button.color
-            }}
-              variant={theme.components.button.variant}
+              variant="default"
+              leftSection={<IconBrandGoogle size={18} />}
+              radius="md"
             >
-              Create Account
+              Google
             </Button>
-          </Stack>
-
-          <Group mt="xl">
-            <Text size="sm" c={theme.colors.text.dimmed}>
-              Already have an account?{' '}
-              <Anchor size="sm" component="a" href="/login">
-                Sign in
-              </Anchor>
-            </Text>
+            <Button
+              variant="default"
+              leftSection={<IconBrandGithub size={18} />}
+              radius="md"
+            >
+              GitHub
+            </Button>
           </Group>
-        </Paper>
-      </Container>
-    </Box>
-  );
-};
 
-export default RegisterPage;
+          <Divider label="Or continue with email" labelPosition="center" />
+
+          {error && (
+            <Alert icon={<IconAlertCircle size={16} />} color="red" radius="md">
+              {error}
+            </Alert>
+          )}
+
+          <form onSubmit={form.onSubmit(handleSubmit)}>
+            <Stack gap="md">
+              <TextInput
+                required
+                label="Full Name"
+                placeholder="John Doe"
+                leftSection={<IconUser size={18} />}
+                radius="md"
+                {...form.getInputProps('fullName')}
+              />
+
+              <TextInput
+                required
+                label="Email"
+                placeholder="you@example.com"
+                leftSection={<IconMail size={18} />}
+                radius="md"
+                {...form.getInputProps('email')}
+              />
+
+              <PasswordInput
+                required
+                label="Password"
+                placeholder="Your password"
+                radius="md"
+                {...form.getInputProps('password')}
+              />
+
+              <PasswordInput
+                required
+                label="Confirm Password"
+                placeholder="Confirm your password"
+                radius="md"
+                {...form.getInputProps('confirmPassword')}
+              />
+
+              <Button type="submit" fullWidth radius="md" size="md" loading={loading} mt="md">
+                Create Account
+              </Button>
+            </Stack>
+          </form>
+
+          <Text size="xs" c="dimmed" ta="center">
+            By signing up, you agree to our{' '}
+            <Anchor size="xs" onClick={() => navigate('/terms')}>
+              Terms of Service
+            </Anchor>{' '}
+            and{' '}
+            <Anchor size="xs" onClick={() => navigate('/privacy')}>
+              Privacy Policy
+            </Anchor>
+          </Text>
+        </Stack>
+      </Paper>
+    </Container>
+  );
+}

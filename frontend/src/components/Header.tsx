@@ -1,3 +1,6 @@
+// ================================
+// src/components/Header.tsx (TeamFlow)
+// ================================
 import {
   Box,
   Container,
@@ -7,263 +10,387 @@ import {
   Avatar,
   Menu,
   Burger,
+  Drawer,
+  Stack,
+  Badge,
+  Indicator,
 } from "@mantine/core";
 import { useState } from "react";
 import {
-  User,
+  Users,
   LayoutDashboard,
-  Shirt,
-  Palette,
+  CheckSquare,
+  Calendar,
+  Settings,
+  Bell,
+  Plus,
+  ChevronDown,
+  User,
+  LogOut,
+  Building2,
 } from "lucide-react";
-import { logout } from "../sevices/authServices";
-import { useNavigate } from "react-router";
+import { authService } from "../sevices/authServices";
+import { useNavigate, useLocation } from "react-router";
 
 const navItems = [
-  { id: "dashboard", label: "Dashboard", link: "/", icon: LayoutDashboard },
-  { id: "closet", label: "Closet", link: "/closet", icon: Shirt },
-  { id: "outfits", label: "Outfits", link: "/outfits", icon: Palette },
+  { id: "dashboard", label: "Dashboard", link: "/dashboard", icon: LayoutDashboard },
+  { id: "tasks", label: "Tasks", link: "/tasks", icon: CheckSquare },
+  { id: "teams", label: "Teams", link: "/teams", icon: Users },
+  { id: "calendar", label: "Calendar", link: "/calendar", icon: Calendar },
 ];
 
-const Header = () => {
+interface User {
+  id: string;
+  name: string;
+  email: string;
+  avatar?: string;
+  currentTeam: {
+    id: string;
+    name: string;
+  };
+}
+
+interface HeaderProps {
+  user?: User;
+  unreadNotifications?: number;
+}
+
+const Header = ({ user, unreadNotifications = 0 }: HeaderProps) => {
   const [opened, setOpened] = useState(false);
-  const [active, setActive] = useState("dashboard");
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const location = useLocation();
 
   const isAuthenticated = Boolean(localStorage.getItem("token"));
 
-  const handleNavClick = (id: string, link: string) => {
-    setActive(id);
+  const handleNavClick = (link: string) => {
     setOpened(false);
-    navigate(`${link}`)
-
+    navigate(link);
   };
 
   const handleLogout = () => {
-    logout();
+    authService.logout();
     window.location.href = "/login";
   };
 
   return (
-    <Box
-      component="header"
-      style={{
-        background: "#ffffff",
-        borderBottom: "1px solid #e5e7eb",
-        position: "sticky",
-        top: 0,
-        zIndex: 100,
-      }}
-    >
-      <Container size="xl" style={{ maxWidth: 1200 }}>
-        <Group justify="space-between" style={{ height: 72 }}>
-          {/* Logo */}
-          <UnstyledButton
-            onClick={() => handleNavClick("dashboard", 'dashboard')}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 2,
-            }}
-          >
-            <Text
-              size="lg"
-              fw={600}
-              style={{
-                color: "#111827",
-                letterSpacing: "-0.02em",
-              }}
-            >
-              Fit
-            </Text>
-            <Text
-              size="lg"
-              fw={300}
-              style={{
-                color: "#6b7280",
-                letterSpacing: "-0.02em",
-              }}
-            >
-              Check
-            </Text>
-          </UnstyledButton>
-
-          {/* Desktop Navigation */}
-          <Group gap={4} visibleFrom="sm">
-            {navItems.map(({ id, label, link, icon: Icon }) => (
+    <>
+      <Box
+        component="header"
+        style={{
+          background: "#ffffff",
+          borderBottom: "1px solid #e5e7eb",
+          position: "sticky",
+          top: 0,
+          zIndex: 100,
+          boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.05)",
+        }}
+      >
+        <Container size="xl" style={{ maxWidth: 1200 }}>
+          <Group justify="space-between" style={{ height: 64 }}>
+            {/* Logo */}
+            <Group gap="lg">
               <UnstyledButton
-                key={id}
-                onClick={() => handleNavClick(id, link)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 6,
-                  padding: "8px 16px",
-                  borderRadius: 8,
-                  color: active === id ? "#111827" : "#6b7280",
-                  background: active === id ? "#f3f4f6" : "transparent",
-                  fontWeight: active === id ? 500 : 400,
-                  fontSize: 14,
-                  transition: "all 0.15s ease",
-                  cursor: "pointer",
-                }}
-                onMouseEnter={(e) => {
-                  if (active !== id) {
-                    e.currentTarget.style.background = "#f9fafb";
-                    e.currentTarget.style.color = "#111827";
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (active !== id) {
-                    e.currentTarget.style.background = "transparent";
-                    e.currentTarget.style.color = "#6b7280";
-                  }
-                }}
+                onClick={() => handleNavClick("/")}
+                style={{ display: "flex", alignItems: "center", gap: 8 }}
               >
-                <Icon size={16} strokeWidth={1.5} />
-                <span>{label}</span>
-              </UnstyledButton>
-            ))}
-          </Group>
-
-          {/* Profile & Mobile Menu */}
-          <Group gap="sm">
-            <Menu position="bottom-end" shadow="sm" width={180}>
-              <Menu.Target>
-                <UnstyledButton
+                <Box
                   style={{
+                    width: 32,
+                    height: 32,
+                    borderRadius: 8,
+                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
                     display: "flex",
                     alignItems: "center",
-                    padding: 6,
-                    borderRadius: 8,
-                    border: "1px solid #e5e7eb",
-                    background: "#ffffff",
-                    transition: "all 0.15s ease",
-                    cursor: "pointer",
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = "#f9fafb";
-                    e.currentTarget.style.borderColor = "#d1d5db";
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = "#ffffff";
-                    e.currentTarget.style.borderColor = "#e5e7eb";
+                    justifyContent: "center",
                   }}
                 >
-                  <Avatar size={32} radius="xl" style={{ background: "#111827" }}>
-                    <User size={16} strokeWidth={1.5} />
-                  </Avatar>
-                </UnstyledButton>
-              </Menu.Target>
+                  <Text size="sm" fw={700} style={{ color: "#ffffff" }}>
+                    TF
+                  </Text>
+                </Box>
+                <Text size="lg" fw={600} style={{ color: "#111827" }}>
+                  TeamFlow
+                </Text>
+              </UnstyledButton>
 
-              <Menu.Dropdown
-                style={{
-                  background: "#ffffff",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: 12,
-                  padding: 4,
-                }}
-              >
-                <Menu.Item
-                  component="a"
-                  href="/profile"
-                  style={{
-                    fontSize: 14,
-                    borderRadius: 8,
-                    padding: "8px 12px",
-                  }}
-                >
-                  Profile
-                </Menu.Item>
-                <Menu.Item
-                  component="a"
-                  href="/myoutfits"
-                  style={{
-                    fontSize: 14,
-                    borderRadius: 8,
-                    padding: "8px 12px",
-                  }}
-                >
-                  My Outfits
-                </Menu.Item>
-                <Menu.Item
-                  component="a"
-                  href="/favorites"
-                  style={{
-                    fontSize: 14,
-                    borderRadius: 8,
-                    padding: "8px 12px",
-                  }}
-                >
-                  Favorites
-                </Menu.Item>
-                <Menu.Item
-                  component="a"
-                  href="/preferences"
-                  style={{
-                    fontSize: 14,
-                    borderRadius: 8,
-                    padding: "8px 12px",
-                  }}
-                >
-                  Preferences
-                </Menu.Item>
+              {/* Team Selector (Desktop) */}
+              {isAuthenticated && user && (
+                <Menu position="bottom-start" shadow="md" width={240}>
+                  <Menu.Target>
+                    <UnstyledButton
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        padding: "6px 12px",
+                        borderRadius: 8,
+                        border: "1px solid #e5e7eb",
+                        background: "#f9fafb",
+                        fontSize: 14,
+                      }}
+                    >
+                      <Building2 size={16} strokeWidth={1.5} />
+                      <Text size="sm" fw={500}>
+                        {user.currentTeam.name}
+                      </Text>
+                      <ChevronDown size={14} strokeWidth={1.5} />
+                    </UnstyledButton>
+                  </Menu.Target>
 
-                <Menu.Divider style={{ margin: "4px 0" }} />
+                  <Menu.Dropdown>
+                    <Menu.Label>Your Teams</Menu.Label>
+                    <Menu.Item leftSection={<Building2 size={16} />}>
+                      {user.currentTeam.name}
+                    </Menu.Item>
+                    <Menu.Divider />
+                    <Menu.Item
+                      leftSection={<Plus size={16} />}
+                      onClick={() => navigate("/teams/new")}
+                    >
+                      Create Team
+                    </Menu.Item>
+                  </Menu.Dropdown>
+                </Menu>
+              )}
+            </Group>
 
-                <Menu.Item
-                  onClick={handleLogout}
-                  style={{
-                    fontSize: 14,
-                    borderRadius: 8,
-                    padding: "8px 12px",
-                    color: isAuthenticated ? "#dc2626" : "#111827",
-                  }}
-                >
-                  {isAuthenticated ? "Log Out" : "Log In"}
-                </Menu.Item>
-              </Menu.Dropdown>
-            </Menu>
+            {/* Desktop Navigation */}
+            {isAuthenticated && (
+              <Group gap={4} visibleFrom="sm">
+                {navItems.map(({ id, label, link, icon: Icon }) => {
+                  const active = location.pathname === link;
 
-            <Burger
-              hiddenFrom="sm"
-              opened={opened}
-              onClick={() => setOpened(!opened)}
-              size="sm"
-              color="#111827"
-            />
+                  return (
+                    <UnstyledButton
+                      key={id}
+                      onClick={() => handleNavClick(link)}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 8,
+                        padding: "8px 16px",
+                        borderRadius: 8,
+                        color: active ? "#667eea" : "#6b7280",
+                        background: active ? "#eef2ff" : "transparent",
+                        fontWeight: active ? 500 : 400,
+                        fontSize: 14,
+                        transition: "all 0.15s ease",
+                      }}
+                      onMouseEnter={(e) => {
+                        if (!active) {
+                          e.currentTarget.style.background = "#f9fafb";
+                        }
+                      }}
+                      onMouseLeave={(e) => {
+                        if (!active) {
+                          e.currentTarget.style.background = "transparent";
+                        }
+                      }}
+                    >
+                      <Icon size={18} strokeWidth={1.5} />
+                      <span>{label}</span>
+                    </UnstyledButton>
+                  );
+                })}
+              </Group>
+            )}
+
+            {/* Right Side Actions */}
+            <Group gap="sm">
+              {isAuthenticated && (
+                <>
+                  {/* Quick Create */}
+                  <UnstyledButton
+                    onClick={() => navigate("/tasks/new")}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 6,
+                      padding: "6px 12px",
+                      borderRadius: 8,
+                      background: "#667eea",
+                      color: "#ffffff",
+                      fontSize: 14,
+                      fontWeight: 500,
+                    }}
+                  >
+                    <Plus size={16} strokeWidth={2} />
+                    <Text size="sm" visibleFrom="sm">
+                      New Task
+                    </Text>
+                  </UnstyledButton>
+
+                  {/* Notifications */}
+                  <Indicator
+                    inline
+                    size={16}
+                    offset={4}
+                    disabled={unreadNotifications === 0}
+                    label={unreadNotifications > 9 ? "9+" : unreadNotifications}
+                    color="red"
+                  >
+                    <UnstyledButton
+                      onClick={() => navigate("/notifications")}
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        width: 36,
+                        height: 36,
+                        borderRadius: 8,
+                        border: "1px solid #e5e7eb",
+                        background: "#ffffff",
+                        color: "#6b7280",
+                      }}
+                    >
+                      <Bell size={18} strokeWidth={1.5} />
+                    </UnstyledButton>
+                  </Indicator>
+
+                  {/* Profile Menu */}
+                  <Menu position="bottom-end" shadow="md" width={220}>
+                    <Menu.Target>
+                      <UnstyledButton
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 8,
+                          padding: 4,
+                          borderRadius: 8,
+                          border: "1px solid #e5e7eb",
+                          background: "#ffffff",
+                        }}
+                      >
+                        <Avatar size={32} radius="xl" color="violet" src={user?.avatar}>
+                          {user?.name.charAt(0).toUpperCase() || "U"}
+                        </Avatar>
+                        <ChevronDown
+                          size={14}
+                          strokeWidth={1.5}
+                          style={{ color: "#6b7280" }}
+                        />
+                      </UnstyledButton>
+                    </Menu.Target>
+
+                    <Menu.Dropdown>
+                      <Menu.Label>
+                        <Text size="sm" fw={500}>
+                          {user?.name || "User"}
+                        </Text>
+                        <Text size="xs" c="dimmed">
+                          {user?.email || "user@example.com"}
+                        </Text>
+                      </Menu.Label>
+                      <Menu.Divider />
+                      <Menu.Item
+                        leftSection={<User size={16} />}
+                        onClick={() => navigate("/profile")}
+                      >
+                        Profile
+                      </Menu.Item>
+                      <Menu.Item
+                        leftSection={<Settings size={16} />}
+                        onClick={() => navigate("/settings")}
+                      >
+                        Settings
+                      </Menu.Item>
+                      <Menu.Divider />
+                      <Menu.Item
+                        leftSection={<LogOut size={16} />}
+                        onClick={handleLogout}
+                        color="red"
+                      >
+                        Log out
+                      </Menu.Item>
+                    </Menu.Dropdown>
+                  </Menu>
+                </>
+              )}
+
+              {!isAuthenticated && (
+                <Group gap="xs">
+                  <UnstyledButton
+                    onClick={() => navigate("/login")}
+                    style={{
+                      padding: "8px 16px",
+                      borderRadius: 8,
+                      color: "#6b7280",
+                      fontSize: 14,
+                      fontWeight: 500,
+                    }}
+                  >
+                    Log in
+                  </UnstyledButton>
+                  <UnstyledButton
+                    onClick={() => navigate("/signup")}
+                    style={{
+                      padding: "8px 16px",
+                      borderRadius: 8,
+                      background: "#667eea",
+                      color: "#ffffff",
+                      fontSize: 14,
+                      fontWeight: 500,
+                    }}
+                  >
+                    Sign up
+                  </UnstyledButton>
+                </Group>
+              )}
+
+              {/* Mobile Burger */}
+              {isAuthenticated && (
+                <Burger
+                  hiddenFrom="sm"
+                  opened={opened}
+                  onClick={() => setOpened(!opened)}
+                  size="sm"
+                />
+              )}
+            </Group>
           </Group>
-        </Group>
+        </Container>
+      </Box>
 
-        {/* Mobile Navigation */}
-        {opened && (
-          <Box pb="md" hiddenFrom="sm">
-            {navItems.map(({ id, label, link, icon: Icon }) => (
+      {/* Mobile Drawer */}
+      <Drawer
+        opened={opened}
+        onClose={() => setOpened(false)}
+        size="xs"
+        padding="md"
+        title={
+          <Text size="lg" fw={600}>
+            TeamFlow
+          </Text>
+        }
+      >
+        <Stack gap="xs">
+          {navItems.map(({ id, label, link, icon: Icon }) => {
+            const active = location.pathname === link;
+
+            return (
               <UnstyledButton
                 key={id}
-                onClick={() => handleNavClick(id)}
+                onClick={() => handleNavClick(link)}
                 style={{
                   display: "flex",
                   alignItems: "center",
                   gap: 12,
-                  width: "100%",
                   padding: "12px 16px",
                   borderRadius: 8,
-                  marginBottom: 4,
-                  color: active === id ? "#111827" : "#6b7280",
-                  background: active === id ? "#f3f4f6" : "transparent",
-                  fontWeight: active === id ? 500 : 400,
+                  color: active ? "#667eea" : "#111827",
+                  background: active ? "#eef2ff" : "transparent",
+                  fontWeight: active ? 500 : 400,
                   fontSize: 15,
-                  transition: "all 0.15s ease",
                 }}
               >
-                <Icon size={18} strokeWidth={1.5} />
+                <Icon size={20} strokeWidth={1.5} />
                 <span>{label}</span>
               </UnstyledButton>
-            ))}
-          </Box>
-        )}
-      </Container>
-    </Box>
+            );
+          })}
+        </Stack>
+      </Drawer>
+    </>
   );
 };
 

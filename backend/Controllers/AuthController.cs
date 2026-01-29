@@ -1,101 +1,98 @@
-using Microsoft.AspNetCore.Mvc;
-using System.Security.Cryptography;
-using System.Text;
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using Microsoft.IdentityModel.Tokens;
+using Backend.Data;
+using Backend.DTOs.Auth;
+using Backend.Models;
+using Backend.Repositories.Interfaces;
+using Backend.Services.Interfaces;
 using Dapper;
-using MySqlConnector;
-using System.Data;
+using Microsoft.AspNetCore.Mvc;
 
 
+namespace Backend.Controllers;
 
 [ApiController]
-[Route("api/[controller]")]
+[Route("api/auth")]
 public class AuthController : ControllerBase
 {
-    private readonly IUserRepository _userRepo;
-    private readonly IPasswordService _passwordService;
-    private readonly IJwtService _jwtService;
+    private readonly IUserRepository _users;
+    private readonly IPasswordService _passwords;
+    private readonly IJwtService _jwt;
+    private readonly DapperContext _context;
 
     public AuthController(
-        IUserRepository userRepo,
-        IPasswordService passwordService,
-        IJwtService jwtService)
+        IUserRepository users,
+        IPasswordService passwords,
+        IJwtService jwt,
+        DapperContext context)
     {
-        _userRepo = userRepo;
-        _passwordService = passwordService;
-        _jwtService = jwtService;
-    }
-
-    [HttpPost("register")]
-    public async Task<ActionResult<AuthResponse>> Register(RegisterRequest req)
-    {
-        // Validate input
-        if (string.IsNullOrWhiteSpace(req.Email) || string.IsNullOrWhiteSpace(req.Password))
-        {
-            return BadRequest(new { message = "Email and password are required" });
-        }
-
-        if (req.Password.Length < 6)
-        {
-            return BadRequest(new { message = "Password must be at least 6 characters" });
-        }
-
-        // Check if user already exists
-        var existingUser = await _userRepo.GetByEmailAsync(req.Email);
-        if (existingUser != null)
-        {
-            return Conflict(new { message = "Email already registered" });
-        }
-
-        // Hash password and create user
-        var passwordHash = _passwordService.HashPassword(req.Password);
-        var user = await _userRepo.CreateAsync(req.Email, passwordHash, req.FullName);
-
-        // Generate JWT token
-        var token = _jwtService.GenerateToken(user);
-
-        return Ok(new AuthResponse
-        {
-            UserId = user.Id,
-            Email = user.Email,
-            FullName = user.FullName,
-            Token = token
-        });
+        _users = users;
+        _passwords = passwords;
+        _jwt = jwt;
+        _context = context;
     }
 
     [HttpPost("login")]
-    public async Task<ActionResult<AuthResponse>> Login(LoginRequest req)
+    public async Task<IActionResult> Login(LoginDto dto)
     {
-        // Validate input
-        if (string.IsNullOrWhiteSpace(req.Email) || string.IsNullOrWhiteSpace(req.Password))
-        {
-            return BadRequest(new { message = "Email and password are required" });
-        }
+        var user = await _users.GetByEmailAsync(dto.Email);
+        if (user == null || !_passwords.VerifyPassword(dto.Password, user.PasswordHash))
+            return Unauthorized();
 
-        // Get user by email
-        var user = await _userRepo.GetByEmailAsync(req.Email);
-        if (user == null)
-        {
-            return Unauthorized(new { message = "Invalid email or password" });
-        }
+        var accessToken = _jwt.GenerateAccessToken(user);
+        var refreshToken = _jwt.GenerateRefreshToken();
 
-        // Verify password
-        if (!_passwordService.VerifyPassword(req.Password, user.PasswordHash))
-        {
-            return Unauthorized(new { message = "Invalid email or password" });
-        }
+        using var conn = _context.CreateConnection();
+        await conn.ExecuteAsync(
+            """
+            INSERT INTO refresh_tokens (id, user_id, token, expires_at)
+            VALUES (@Id, @UserId, @Token, @ExpiresAt)
+            """,
+            new
+            {
+                Id = Guid.NewGuid().ToString(),
+                UserId = user.Id,
+                Token = refreshToken,
+                ExpiresAt = DateTime.UtcNow.AddDays(7)
+            });
 
-        // Generate JWT token
-        var token = _jwtService.GenerateToken(user);
+        return Ok(new AuthResponseDto(accessToken, refreshToken));
+    }
 
-        return Ok(new AuthResponse
+
+ [HttpPost("register")]
+    public async Task<IActionResult> Register([FromBody] RegisterDto dto)
+    {
+        var existing = await _users.GetByEmailAsync(dto.Email);
+        if (existing != null)
+            return BadRequest(new { message = "Email already in use" });
+
+        var user = new User
         {
-            UserId = user.Id,
-            Email = user.Email,
-            FullName = user.FullName,
-            Token = token
-        });
+            Id = Guid.NewGuid(),
+            Email = dto.Email,
+            FullName = dto.FullName,
+            PasswordHash = _passwords.HashPassword(dto.Password),
+            CreatedAt = DateTime.UtcNow
+        };
+
+        await _users.CreateAsync(user);
+
+        var accessToken = _jwt.GenerateAccessToken(user);
+        var refreshToken = _jwt.GenerateRefreshToken();
+
+        using var conn = _context.CreateConnection();
+        await conn.ExecuteAsync(
+            """
+            INSERT INTO refresh_tokens (id, user_id, token, expires_at)
+            VALUES (@Id, @UserId, @Token, @ExpiresAt)
+            """,
+            new
+            {
+                Id = Guid.NewGuid(),
+                UserId = user.Id,
+                Token = refreshToken,
+                ExpiresAt = DateTime.UtcNow.AddDays(7)
+            });
+
+        return Ok(new AuthResponseDto(accessToken, refreshToken));
     }
 }

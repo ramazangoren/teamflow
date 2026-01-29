@@ -1,5 +1,5 @@
 import axios, { AxiosError } from "axios";
-import type { AuthResponse } from "../interfaces/interfaces";
+// import type { AuthResponse } from "../interfaces/interfaces";
 
 export const getToken = (): string | null => {
   return localStorage.getItem('token');
@@ -30,10 +30,10 @@ export const handleError = (error: unknown): Error => {
 };
 
 
-export const saveUserData = (data: AuthResponse): void => {
-  localStorage.setItem('token', data.token);
-};
+// export const saveUserData = (data: AuthResponse): void => {
+//   localStorage.setItem('token', data.token);
+// };
 
-export const clearUserData = (): void => {
-  localStorage.removeItem('token');
-};
+// export const clearUserData = (): void => {
+//   localStorage.removeItem('token');
+// };
