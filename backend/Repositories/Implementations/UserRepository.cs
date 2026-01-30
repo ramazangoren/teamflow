@@ -34,7 +34,6 @@ public class UserRepository : IUserRepository
             email,
             password_hash AS PasswordHash,
             full_name     AS FullName,
-            role,
             is_active     AS IsActive,
             created_at    AS CreatedAt
         FROM users
@@ -49,8 +48,8 @@ public class UserRepository : IUserRepository
         using var conn = _context.CreateConnection();
         await conn.ExecuteAsync(
             """
-            INSERT INTO users (id, email, password_hash, full_name, role)
-            VALUES (@Id, @Email, @PasswordHash, @FullName, @Role)
+            INSERT INTO users (id, email, password_hash, full_name)
+            VALUES (@Id, @Email, @PasswordHash, @FullName)
             """,
             user);
     }

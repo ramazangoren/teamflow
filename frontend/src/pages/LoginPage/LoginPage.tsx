@@ -15,8 +15,8 @@ import {
   Divider,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
-import { IconMail, IconAlertCircle, IconBrandGoogle, IconBrandGithub } from '@tabler/icons-react';
-import { authService, type LoginData } from '../../sevices/authServices';
+import { IconMail, IconAlertCircle } from '@tabler/icons-react';
+import { authService } from '../../sevices/authServices';
 import { useNavigate } from 'react-router';
 
 export default function LoginPage() {
@@ -41,15 +41,14 @@ export default function LoginPage() {
     setError(null);
 
     try {
-      const loginData: LoginData = {
+      await authService.login({
         email: values.email,
         password: values.password,
-      };
+      });
 
-      await authService.login(loginData);
       navigate('/');
     } catch (err: any) {
-      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+      setError('Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -57,73 +56,39 @@ export default function LoginPage() {
 
   return (
     <Container size={460} my={80}>
-      <Title ta="center" fw={900} style={{ fontSize: '2rem' }}>
+      <Title ta="center" fw={900}>
         Welcome back
       </Title>
-      <Text c="dimmed" size="sm" ta="center" mt={5}>
-        Don't have an account yet?{' '}
-        <Anchor size="sm" onClick={() => navigate('/register')}>
-          Create account
-        </Anchor>
-      </Text>
 
       <Paper withBorder shadow="md" p={40} mt={30} radius="md">
-        <Stack gap="md">
-          <Group grow>
-            <Button
-              variant="default"
-              leftSection={<IconBrandGoogle size={18} />}
-              radius="md"
-            >
-              Google
-            </Button>
-            <Button
-              variant="default"
-              leftSection={<IconBrandGithub size={18} />}
-              radius="md"
-            >
-              GitHub
-            </Button>
-          </Group>
-
-          <Divider label="Or continue with email" labelPosition="center" />
-
+        <Stack>
           {error && (
-            <Alert icon={<IconAlertCircle size={16} />} color="red" radius="md">
+            <Alert icon={<IconAlertCircle size={16} />} color="red">
               {error}
             </Alert>
           )}
 
           <form onSubmit={form.onSubmit(handleSubmit)}>
-            <Stack gap="md">
+            <Stack>
               <TextInput
                 required
                 label="Email"
-                placeholder="you@example.com"
                 leftSection={<IconMail size={18} />}
-                radius="md"
                 {...form.getInputProps('email')}
               />
 
               <PasswordInput
                 required
                 label="Password"
-                placeholder="Your password"
-                radius="md"
                 {...form.getInputProps('password')}
               />
 
               <Group justify="space-between">
-                <Checkbox
-                  label="Remember me"
-                  {...form.getInputProps('rememberMe', { type: 'checkbox' })}
-                />
-                <Anchor size="sm" onClick={() => navigate('/forgot-password')}>
-                  Forgot password?
-                </Anchor>
+                <Checkbox label="Remember me" />
+                <Anchor size="sm">Forgot password?</Anchor>
               </Group>
 
-              <Button type="submit" fullWidth radius="md" size="md" loading={loading}>
+              <Button type="submit" loading={loading} fullWidth>
                 Sign in
               </Button>
             </Stack>

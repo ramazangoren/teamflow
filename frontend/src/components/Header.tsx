@@ -1,6 +1,3 @@
-// ================================
-// src/components/Header.tsx (TeamFlow)
-// ================================
 import {
   Box,
   Container,
@@ -12,10 +9,9 @@ import {
   Burger,
   Drawer,
   Stack,
-  Badge,
   Indicator,
 } from "@mantine/core";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Users,
   LayoutDashboard,
@@ -25,42 +21,48 @@ import {
   Bell,
   Plus,
   ChevronDown,
-  User,
+  User as UserIcon,
   LogOut,
   Building2,
 } from "lucide-react";
-import { authService } from "../sevices/authServices";
+import { authService, type User } from "../sevices/authServices";
 import { useNavigate, useLocation } from "react-router";
 
 const navItems = [
-  { id: "dashboard", label: "Dashboard", link: "/dashboard", icon: LayoutDashboard },
+  {
+    id: "dashboard",
+    label: "Dashboard",
+    link: "/dashboard",
+    icon: LayoutDashboard,
+  },
   { id: "tasks", label: "Tasks", link: "/tasks", icon: CheckSquare },
   { id: "teams", label: "Teams", link: "/teams", icon: Users },
   { id: "calendar", label: "Calendar", link: "/calendar", icon: Calendar },
 ];
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  avatar?: string;
-  currentTeam: {
-    id: string;
-    name: string;
-  };
-}
-
 interface HeaderProps {
-  user?: User;
   unreadNotifications?: number;
 }
 
-const Header = ({ user, unreadNotifications = 0 }: HeaderProps) => {
+const Header = ({ unreadNotifications = 0 }: HeaderProps) => {
   const [opened, setOpened] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
-  const isAuthenticated = Boolean(localStorage.getItem("token"));
+  // const isAuthenticated = authService.isAuthenticated();
+
+  const [user, setUser] = useState<User | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    authService
+      .getCurrentUser()
+      .then(setUser)
+      .catch(() => setUser(null))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const isAuthenticated = !!user;
 
   const handleNavClick = (link: string) => {
     setOpened(false);
@@ -69,7 +71,7 @@ const Header = ({ user, unreadNotifications = 0 }: HeaderProps) => {
 
   const handleLogout = () => {
     authService.logout();
-    window.location.href = "/login";
+    navigate("/login");
   };
 
   return (
@@ -82,11 +84,11 @@ const Header = ({ user, unreadNotifications = 0 }: HeaderProps) => {
           position: "sticky",
           top: 0,
           zIndex: 100,
-          boxShadow: "0 1px 3px 0 rgba(0, 0, 0, 0.05)",
+          boxShadow: "0 1px 3px rgba(0,0,0,0.05)",
         }}
       >
         <Container size="xl" style={{ maxWidth: 1200 }}>
-          <Group justify="space-between" style={{ height: 64 }}>
+          <Group justify="space-between" h={64}>
             {/* Logo */}
             <Group gap="lg">
               <UnstyledButton
@@ -98,24 +100,24 @@ const Header = ({ user, unreadNotifications = 0 }: HeaderProps) => {
                     width: 32,
                     height: 32,
                     borderRadius: 8,
-                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    background: "linear-gradient(135deg, #667eea, #764ba2)",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
                   }}
                 >
-                  <Text size="sm" fw={700} style={{ color: "#ffffff" }}>
+                  <Text size="sm" fw={700} c="white">
                     TF
                   </Text>
                 </Box>
-                <Text size="lg" fw={600} style={{ color: "#111827" }}>
+                <Text size="lg" fw={600} c="#111827">
                   TeamFlow
                 </Text>
               </UnstyledButton>
 
-              {/* Team Selector (Desktop) */}
-              {isAuthenticated && user && (
-                <Menu position="bottom-start" shadow="md" width={240}>
+              {/* Team Selector */}
+              {isAuthenticated && user?.currentTeam && (
+                <Menu shadow="md" width={240}>
                   <Menu.Target>
                     <UnstyledButton
                       style={{
@@ -129,11 +131,11 @@ const Header = ({ user, unreadNotifications = 0 }: HeaderProps) => {
                         fontSize: 14,
                       }}
                     >
-                      <Building2 size={16} strokeWidth={1.5} />
+                      <Building2 size={16} />
                       <Text size="sm" fw={500}>
                         {user.currentTeam.name}
                       </Text>
-                      <ChevronDown size={14} strokeWidth={1.5} />
+                      <ChevronDown size={14} />
                     </UnstyledButton>
                   </Menu.Target>
 
@@ -154,7 +156,7 @@ const Header = ({ user, unreadNotifications = 0 }: HeaderProps) => {
               )}
             </Group>
 
-            {/* Desktop Navigation */}
+            {/* Desktop Nav */}
             {isAuthenticated && (
               <Group gap={4} visibleFrom="sm">
                 {navItems.map(({ id, label, link, icon: Icon }) => {
@@ -170,36 +172,25 @@ const Header = ({ user, unreadNotifications = 0 }: HeaderProps) => {
                         gap: 8,
                         padding: "8px 16px",
                         borderRadius: 8,
+                        fontSize: 14,
+                        fontWeight: active ? 500 : 400,
                         color: active ? "#667eea" : "#6b7280",
                         background: active ? "#eef2ff" : "transparent",
-                        fontWeight: active ? 500 : 400,
-                        fontSize: 14,
-                        transition: "all 0.15s ease",
-                      }}
-                      onMouseEnter={(e) => {
-                        if (!active) {
-                          e.currentTarget.style.background = "#f9fafb";
-                        }
-                      }}
-                      onMouseLeave={(e) => {
-                        if (!active) {
-                          e.currentTarget.style.background = "transparent";
-                        }
                       }}
                     >
-                      <Icon size={18} strokeWidth={1.5} />
-                      <span>{label}</span>
+                      <Icon size={18} />
+                      {label}
                     </UnstyledButton>
                   );
                 })}
               </Group>
             )}
 
-            {/* Right Side Actions */}
+            {/* Right Side */}
             <Group gap="sm">
-              {isAuthenticated && (
+              {isAuthenticated ? (
                 <>
-                  {/* Quick Create */}
+                  {/* New Task */}
                   <UnstyledButton
                     onClick={() => navigate("/tasks/new")}
                     style={{
@@ -210,11 +201,10 @@ const Header = ({ user, unreadNotifications = 0 }: HeaderProps) => {
                       borderRadius: 8,
                       background: "#667eea",
                       color: "#ffffff",
-                      fontSize: 14,
                       fontWeight: 500,
                     }}
                   >
-                    <Plus size={16} strokeWidth={2} />
+                    <Plus size={16} />
                     <Text size="sm" visibleFrom="sm">
                       New Task
                     </Text>
@@ -232,23 +222,21 @@ const Header = ({ user, unreadNotifications = 0 }: HeaderProps) => {
                     <UnstyledButton
                       onClick={() => navigate("/notifications")}
                       style={{
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
                         width: 36,
                         height: 36,
                         borderRadius: 8,
                         border: "1px solid #e5e7eb",
-                        background: "#ffffff",
-                        color: "#6b7280",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                       }}
                     >
-                      <Bell size={18} strokeWidth={1.5} />
+                      <Bell size={18} />
                     </UnstyledButton>
                   </Indicator>
 
-                  {/* Profile Menu */}
-                  <Menu position="bottom-end" shadow="md" width={220}>
+                  {/* Profile */}
+                  <Menu shadow="md" width={220}>
                     <Menu.Target>
                       <UnstyledButton
                         style={{
@@ -258,32 +246,27 @@ const Header = ({ user, unreadNotifications = 0 }: HeaderProps) => {
                           padding: 4,
                           borderRadius: 8,
                           border: "1px solid #e5e7eb",
-                          background: "#ffffff",
                         }}
                       >
-                        <Avatar size={32} radius="xl" color="violet" src={user?.avatar}>
-                          {user?.name.charAt(0).toUpperCase() || "U"}
+                        <Avatar radius="xl" size={32}>
+                          {user?.fullName?.[0]?.toUpperCase() ?? "U"}
                         </Avatar>
-                        <ChevronDown
-                          size={14}
-                          strokeWidth={1.5}
-                          style={{ color: "#6b7280" }}
-                        />
+                        <ChevronDown size={14} />
                       </UnstyledButton>
                     </Menu.Target>
 
                     <Menu.Dropdown>
                       <Menu.Label>
                         <Text size="sm" fw={500}>
-                          {user?.name || "User"}
+                          {user?.fullName}
                         </Text>
                         <Text size="xs" c="dimmed">
-                          {user?.email || "user@example.com"}
+                          {user?.email}
                         </Text>
                       </Menu.Label>
                       <Menu.Divider />
                       <Menu.Item
-                        leftSection={<User size={16} />}
+                        leftSection={<UserIcon size={16} />}
                         onClick={() => navigate("/profile")}
                       >
                         Profile
@@ -297,54 +280,39 @@ const Header = ({ user, unreadNotifications = 0 }: HeaderProps) => {
                       <Menu.Divider />
                       <Menu.Item
                         leftSection={<LogOut size={16} />}
-                        onClick={handleLogout}
                         color="red"
+                        onClick={handleLogout}
                       >
                         Log out
                       </Menu.Item>
                     </Menu.Dropdown>
                   </Menu>
-                </>
-              )}
 
-              {!isAuthenticated && (
+                  <Burger
+                    hiddenFrom="sm"
+                    opened={opened}
+                    onClick={() => setOpened(!opened)}
+                    size="sm"
+                  />
+                </>
+              ) : (
                 <Group gap="xs">
-                  <UnstyledButton
-                    onClick={() => navigate("/login")}
-                    style={{
-                      padding: "8px 16px",
-                      borderRadius: 8,
-                      color: "#6b7280",
-                      fontSize: 14,
-                      fontWeight: 500,
-                    }}
-                  >
+                  <UnstyledButton onClick={() => navigate("/login")}>
                     Log in
                   </UnstyledButton>
                   <UnstyledButton
-                    onClick={() => navigate("/signup")}
+                    onClick={() => navigate("/register")}
                     style={{
                       padding: "8px 16px",
                       borderRadius: 8,
                       background: "#667eea",
                       color: "#ffffff",
-                      fontSize: 14,
                       fontWeight: 500,
                     }}
                   >
                     Sign up
                   </UnstyledButton>
                 </Group>
-              )}
-
-              {/* Mobile Burger */}
-              {isAuthenticated && (
-                <Burger
-                  hiddenFrom="sm"
-                  opened={opened}
-                  onClick={() => setOpened(!opened)}
-                  size="sm"
-                />
               )}
             </Group>
           </Group>
@@ -357,37 +325,24 @@ const Header = ({ user, unreadNotifications = 0 }: HeaderProps) => {
         onClose={() => setOpened(false)}
         size="xs"
         padding="md"
-        title={
-          <Text size="lg" fw={600}>
-            TeamFlow
-          </Text>
-        }
       >
         <Stack gap="xs">
-          {navItems.map(({ id, label, link, icon: Icon }) => {
-            const active = location.pathname === link;
-
-            return (
-              <UnstyledButton
-                key={id}
-                onClick={() => handleNavClick(link)}
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 12,
-                  padding: "12px 16px",
-                  borderRadius: 8,
-                  color: active ? "#667eea" : "#111827",
-                  background: active ? "#eef2ff" : "transparent",
-                  fontWeight: active ? 500 : 400,
-                  fontSize: 15,
-                }}
-              >
-                <Icon size={20} strokeWidth={1.5} />
-                <span>{label}</span>
-              </UnstyledButton>
-            );
-          })}
+          {navItems.map(({ id, label, link, icon: Icon }) => (
+            <UnstyledButton
+              key={id}
+              onClick={() => handleNavClick(link)}
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                padding: "12px 16px",
+                borderRadius: 8,
+              }}
+            >
+              <Icon size={20} />
+              {label}
+            </UnstyledButton>
+          ))}
         </Stack>
       </Drawer>
     </>
