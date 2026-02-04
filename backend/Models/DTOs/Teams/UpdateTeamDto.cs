@@ -1,8 +1,9 @@
+// DTOs/Teams/UpdateTeamDto.cs
 namespace Backend.DTOs.Teams;
 
-public class CreateTeamDto
+public class UpdateTeamDto
 {
-    public string Name { get; set; } = string.Empty;
+    public string? Name { get; set; }
     public string? Description { get; set; }
     public string? AvatarUrl { get; set; }
 }

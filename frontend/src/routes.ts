@@ -12,6 +12,9 @@ import Tasks from "./pages/Tasks/Tasks";
 import Teams from "./pages/Teams/Teams";
 import Calendar from "./pages/Calendar/Calendar";
 import Notifications from "./pages/Notifications/Notifications";
+import NewTask from "./pages/NewTask/NewTask";
+import TeamSettings from "./pages/Teams/TeamSettings";
+import TeamDetails from "./pages/Teams/TeamDetails";
 
 
 const router = createBrowserRouter([
@@ -36,13 +39,22 @@ const router = createBrowserRouter([
         Component: Teams,
       },
       {
+        path: "/teams/:teamId",
+        Component: TeamDetails,
+      },
+      {
+        path: "/teams/:teamId/settings",
+        Component: TeamSettings,
+      },
+
+      {
         path: "/calendar",
         Component: Calendar,
       },
-      // {
-      //   path: "/tasks/new",
-      //   Component: NewTask,
-      // },
+      {
+        path: "/tasks/new",
+        Component: NewTask,
+      },
       {
         path: "/notifications",
         Component: Notifications,

@@ -7,6 +7,32 @@ CREATE TABLE users (
     created_at      DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
+-- Update teams table
+ALTER TABLE teams
+ADD COLUMN description TEXT NULL AFTER name,
+ADD COLUMN avatar_url VARCHAR(500) NULL AFTER description,
+ADD COLUMN settings JSON NULL AFTER avatar_url;
+
+-- Create team invitations table
+CREATE TABLE team_invitations (
+    id CHAR(36) PRIMARY KEY,
+    team_id CHAR(36) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    role VARCHAR(50) NOT NULL DEFAULT 'Member',
+    invited_by CHAR(36) NOT NULL,
+    token CHAR(36) NOT NULL UNIQUE,
+    expires_at DATETIME NOT NULL,
+    accepted_at DATETIME NULL,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (team_id) REFERENCES teams(id) ON DELETE CASCADE,
+    FOREIGN KEY (invited_by) REFERENCES users(id)
+) ENGINE=InnoDB;
+
+-- Add index for faster lookups
+CREATE INDEX idx_team_invitations_token ON team_invitations(token);
+CREATE INDEX idx_team_invitations_email ON team_invitations(email);
+
+
 
 CREATE TABLE refresh_tokens (
     id          CHAR(36) PRIMARY KEY,

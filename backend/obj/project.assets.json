@@ -927,19 +927,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\r84394915\\.nuget\\packages\\": {}
+    "/Users/ramazangoren/.nuget/packages/": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\r84394915\\Desktop\\teamflow\\teamflow\\backend\\..csproj",
+      "projectUniqueName": "/Users/ramazangoren/Desktop/teamflow/backend/..csproj",
       "projectName": ".",
-      "projectPath": "C:\\Users\\r84394915\\Desktop\\teamflow\\teamflow\\backend\\..csproj",
-      "packagesPath": "C:\\Users\\r84394915\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\r84394915\\Desktop\\teamflow\\teamflow\\backend\\obj\\",
+      "projectPath": "/Users/ramazangoren/Desktop/teamflow/backend/..csproj",
+      "packagesPath": "/Users/ramazangoren/.nuget/packages/",
+      "outputPath": "/Users/ramazangoren/Desktop/teamflow/backend/obj/",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\r84394915\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "/Users/ramazangoren/.nuget/NuGet/NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net8.0"
@@ -1012,7 +1012,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.404/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.416/PortableRuntimeIdentifierGraph.json"
       }
     }
   }

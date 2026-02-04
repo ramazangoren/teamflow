@@ -4,7 +4,6 @@ import {
   PasswordInput,
   Paper,
   Title,
-  Text,
   Container,
   Button,
   Anchor,
@@ -12,7 +11,6 @@ import {
   Alert,
   Checkbox,
   Group,
-  Divider,
 } from '@mantine/core';
 import { useForm } from '@mantine/form';
 import { IconMail, IconAlertCircle } from '@tabler/icons-react';
@@ -46,9 +44,21 @@ export default function LoginPage() {
         password: values.password,
       });
 
+      // Login successful - cookies are set automatically by backend
       navigate('/');
     } catch (err: any) {
-      setError('Login failed. Please check your credentials.');
+      // Handle different error scenarios
+      if (err.response?.status === 401) {
+        setError('Invalid email or password. Please try again.');
+      } else if (err.response?.status === 400) {
+        setError(err.response?.data?.message || 'Invalid request.');
+      } else if (err.code === 'ERR_NETWORK') {
+        setError('Unable to connect to server. Please check your connection.');
+      } else {
+        setError('Login failed. Please try again later.');
+      }
+      
+      console.error('Login error:', err);
     } finally {
       setLoading(false);
     }
@@ -73,6 +83,7 @@ export default function LoginPage() {
               <TextInput
                 required
                 label="Email"
+                placeholder="your@email.com"
                 leftSection={<IconMail size={18} />}
                 {...form.getInputProps('email')}
               />
@@ -80,12 +91,18 @@ export default function LoginPage() {
               <PasswordInput
                 required
                 label="Password"
+                placeholder="Your password"
                 {...form.getInputProps('password')}
               />
 
               <Group justify="space-between">
-                <Checkbox label="Remember me" />
-                <Anchor size="sm">Forgot password?</Anchor>
+                <Checkbox 
+                  label="Remember me"
+                  {...form.getInputProps('rememberMe', { type: 'checkbox' })}
+                />
+                <Anchor size="sm" component="button" type="button">
+                  Forgot password?
+                </Anchor>
               </Group>
 
               <Button type="submit" loading={loading} fullWidth>
